@@ -52,7 +52,7 @@ jobs:
         repository: 'ElementsProject/lightning'
         path: 'lightning'
         ref: ${{ steps.cln-latest-install.outputs.CLN_VERSION }}
-        fetch-depth: 0  # Fetch all history for all branches and tags
+        fetch-depth: 0  # Fetch all history for all branches and tag
         submodules: 'recursive'
 
     - name: Install Core Lightning Python package dependencies
