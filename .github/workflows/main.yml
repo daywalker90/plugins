@@ -72,7 +72,7 @@ jobs:
         sudo mkdir /usr/local/libexec/c-lightning
         sudo mkdir /usr/local/libexec/c-lightning/plugins
         sudo chown -R $USER /usr/local/libexec
-    
+
     - name: Cache CLN
       id: cache-cln
       if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
@@ -83,7 +83,7 @@ jobs:
           /usr/local/libexec/c-lightning
           ./lightning
         key: cache-cln-${{ matrix.cln-version }}-${{ runner.os }}
-    
+
     - name: Cache bitcoind
       id: cache-bitcoind
       if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
@@ -91,6 +91,14 @@ jobs:
       with:
         path: /usr/local/bin/bitcoin*
         key: cache-bitcoind-${{ matrix.bitcoind-version }}-${{ runner.os }}
+
+    - name: Cache python dependencies
+      id: cache-python-deps
+      if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/lib/python${{ matrix.python-version }}/site-packages
+        key: cache-python-deps-${{ matrix.python-version }}-${{ matrix.cln-version }}-${{ runner.os }}
 
     - name: Download Bitcoin ${{ matrix.bitcoind-version }} & install binaries
       if: ${{ steps.cache-bitcoind.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
@@ -122,13 +130,15 @@ jobs:
         fetch-depth: 0  # Fetch all history for all branches and tags
         submodules: 'recursive'
 
-    - name: Install Core Lightning Python package dependencies
+    - name: Set up Python ${{ matrix.python-version }}
       if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
-      run: |
-        sudo apt-get install -y \
-          python3 \
-          python3-pip \
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
+    - name: Install Core Lightning Python package dependencies
+      if: ${{ steps.cache-python-deps.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
+      run: |
         cd lightning
         pip3 install --user -U \
           pip \
@@ -144,11 +154,8 @@ jobs:
         pip install --user -U -r requirements.txt
         pip install --user contrib/pyln-client contrib/pyln-testing flaky
 
-    - name: Set up Python ${{ matrix.python-version }}
-      if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+        pip3 install --upgrade pip
+        pip3 install --user -U virtualenv pip > /dev/null
 
     - name: Run pytest tests
       id: pytest_tests
@@ -161,9 +168,6 @@ jobs:
         export TEST_DEBUG=1
         export TRAVIS=1
         export VALGRIND=0
-
-        pip3 install --upgrade pip
-        pip3 install --user -U virtualenv pip > /dev/null
 
         if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
           plugin_dirs="${{ steps.set_plugin_dirs.outputs.plugin_dirs }}"
