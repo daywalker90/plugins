@@ -81,6 +81,7 @@ jobs:
         path: |
           /usr/local/bin/lightning*
           /usr/local/libexec/c-lightning
+          ./lightning
         key: cache-cln-${{ matrix.cln-version }}-${{ runner.os }}
     
     - name: Cache bitcoind
@@ -92,7 +93,7 @@ jobs:
         key: cache-bitcoind-${{ matrix.bitcoind-version }}-${{ runner.os }}
 
     - name: Download Bitcoin ${{ matrix.bitcoind-version }} & install binaries
-      if: ${{ steps.cache-cln.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
+      if: ${{ steps.cache-bitcoind.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
       run: |
         export BITCOIND_VERSION=${{ matrix.bitcoind-version }}
         wget https://bitcoincore.org/bin/bitcoin-core-${BITCOIND_VERSION}/bitcoin-${BITCOIND_VERSION}-x86_64-linux-gnu.tar.gz
@@ -111,8 +112,8 @@ jobs:
         sudo tar -xvf ${url##*/} -C /usr/local --strip-components=2
         echo "CLN_VERSION=$(lightningd --version)" >> "$GITHUB_OUTPUT"
 
-    - name: Checkout Core Lightning latest
-      if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
+    - name: Checkout Core Lightning ${{ matrix.cln-version }}
+      if: ${{ steps.cache-cln.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
       uses: actions/checkout@v4
       with:
         repository: 'ElementsProject/lightning'
