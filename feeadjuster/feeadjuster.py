@@ -7,7 +7,7 @@ from clnutils import cln_parse_rpcversion
 from pyln.client import Plugin, Millisatoshi, RpcError
 from threading import Lock
 
-
+# yo
 plugin = Plugin()
 # Our amount and the total amount in each of our channel, indexed by scid
 plugin.adj_balances = {}
