@@ -95,7 +95,7 @@ jobs:
       if: ${{ steps.cache-bitcoind.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
       with:
           path: /usr/local/bin/bitcoin*
-          key: ${{ steps.cache-bitcoind.outputs.cache-primary-key }}
+          key: cache-bitcoind-${{ matrix.bitcoind-version }}-${{ runner.os }}
 
     - name: Restore CLN cache
       id: cache-cln
@@ -137,7 +137,7 @@ jobs:
             /usr/local/bin/lightning*
             /usr/local/libexec/c-lightning
             ./lightning
-          key: ${{ steps.cache-cln.outputs.cache-primary-key }}
+          key: cache-cln-${{ matrix.cln-version }}-${{ runner.os }}
 
     - name: Set up Python ${{ matrix.python-version }}
       if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
@@ -179,7 +179,7 @@ jobs:
       if: ${{ steps.cache-python-deps.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
       with:
           path: ~/.local/lib/python${{ matrix.python-version }}/site-packages
-          key: ${{ steps.cache-python-deps.outputs.cache-primary-key }}
+          key: cache-python-deps-${{ matrix.python-version }}-${{ matrix.cln-version }}-${{ runner.os }}
 
     - name: Run pytest tests
       id: pytest_tests
