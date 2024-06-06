@@ -1,6 +1,6 @@
 # Plugins for Core-Lightning
 
-Community curated plugins for Core-Lightning.
+Community curated plugins for Core-Lighning.
 
 [![Integration Tests (latest)](https://github.com/lightningd/plugins/actions/workflows/main.yml/badge.svg)](https://github.com/lightningd/plugins/actions/workflows/main.yml)
 [![Nightly Integration Tests (master)](https://github.com/lightningd/plugins/actions/workflows/nightly.yml/badge.svg)](https://github.com/lightningd/plugins/actions/workflows/nightly.yml)
