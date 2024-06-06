@@ -184,6 +184,13 @@ jobs:
             update_badges='--update-badges'
         fi
 
+        if [[ -z "$plugin_dirs" ]]; then
+            # Test all plugins if no specific plugins were changed
+            python3 .ci/test.py main ${{ matrix.python-version }} $update_badges
+        else
+            python3 .ci/test.py main ${{ matrix.python-version }} $update_badges $(echo "$plugin_dirs")
+        fi
+
   gather:
     # A dummy task that depends on the full matrix of tests, and signals completion.
     name: CI completion
