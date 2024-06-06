@@ -1,4 +1,4 @@
-# Plugins for Core-Lightning
+# Plugins for Core Lightning
 
 Community curated plugins for Core-Lightning.
 
