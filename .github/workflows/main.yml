@@ -163,7 +163,7 @@ jobs:
     # A dummy task that depends on the full matrix of tests, and signals completion.
     name: CI completion
     runs-on: ubuntu-22.04
-    if: ${{ always() }}
+    if: ${{ needs.build-and-test.outputs.run_ci == true }}
     needs:
       - build-and-test
     steps:
