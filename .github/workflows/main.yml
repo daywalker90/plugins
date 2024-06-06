@@ -35,14 +35,14 @@ jobs:
       with:
           files: '**/*'
           files_ignore: |
-            - '*.md'
-            - '*.toml'
-            - '*.yml'
-            - '*.lock'
-            - 'Dockerfile'
-            - '.gitignore'
-            - 'LICENSE'
-            - 'archived/**'
+            *.md
+            *.toml
+            *.yml
+            *.lock
+            Dockerfile
+            .gitignore
+            LICENSE
+            archived/**
 
     - name: Set plugin_dirs
       id: set_plugin_dirs
