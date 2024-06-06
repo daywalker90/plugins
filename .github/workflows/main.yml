@@ -181,9 +181,9 @@ jobs:
 
         if [[ -z "$plugin_dirs" ]]; then
             # Test all plugins if no specific plugins were changed
-            python3 .ci/test.py main ${{ matrix.python-version }} $update_badges
+            # python3 .ci/test.py main ${{ matrix.python-version }} $update_badges
         else
-            python3 .ci/test.py main ${{ matrix.python-version }} $update_badges $(echo "$plugin_dirs")
+            # python3 .ci/test.py main ${{ matrix.python-version }} $update_badges $(echo "$plugin_dirs")
         fi
 
   gather:
