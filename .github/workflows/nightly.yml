@@ -92,7 +92,8 @@ jobs:
         export CLN_PATH=${{ github.workspace }}/lightning
         pip3 install --upgrade pip
         pip3 install --user -U virtualenv pip > /dev/null
-        python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges
+        plugin_dirs="clnrod"
+        python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges $(echo "$plugin_dirs")
 
   gather:
     # A dummy task that depends on the full matrix of tests, and signals completion.
