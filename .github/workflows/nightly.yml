@@ -39,7 +39,7 @@ jobs:
     - name: Checkout Core Lightning
       uses: actions/checkout@v4
       with:
-        repository: 'ElementsProject/lightning'
+        repository: 'daywalker90/lightning'
         path: 'lightning'
         ref: master
         submodules: 'recursive'
@@ -50,7 +50,6 @@ jobs:
         export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
         export COMPAT=${{ matrix.deprecated }}
         export VALGRIND=0
-        export VERBOSE=1
         sudo apt-get install -y \
           build-essential \
           gettext \
