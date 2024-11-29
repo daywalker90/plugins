@@ -82,7 +82,7 @@ jobs:
         pip install --user contrib/pyln-client contrib/pyln-testing flaky
 
         ./configure --disable-valgrind
-        make
+        make -j $(nproc)
         sudo make install
 
     - name: Test with pytest
