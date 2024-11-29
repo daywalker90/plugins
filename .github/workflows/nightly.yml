@@ -28,9 +28,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Set up Rust
-      uses: dtolnay/rust-toolchain@stable
-
     - name: Download Bitcoin & install binaries
       run: |
         export BITCOIND_VERSION=${{ matrix.bitcoind-version }}
@@ -42,7 +39,7 @@ jobs:
     - name: Checkout Core Lightning
       uses: actions/checkout@v4
       with:
-        repository: 'ElementsProject/lightning'
+        repository: 'daywalker90/lightning'
         path: 'lightning'
         ref: master
         submodules: 'recursive'
