@@ -69,7 +69,7 @@ jobs:
           pytest-custom-exit-code==0.3.0 \
           pytest-json-report
 
-        poetry shell
+        source $(poetry env info --path)/bin/activate
 
         export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
         export COMPAT=${{ matrix.deprecated }}
@@ -84,7 +84,7 @@ jobs:
     - name: Test with pytest
       run: |
         cd lightning
-        poetry shell
+        source $(poetry env info --path)/bin/activate
         cd ..
         export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
         export COMPAT=${{ matrix.deprecated }}
