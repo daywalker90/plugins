@@ -47,6 +47,9 @@ jobs:
 
     - name: Compile & install Core Lightning
       run: |
+        export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
+        export COMPAT=${{ matrix.deprecated }}
+        export VALGRIND=0
         sudo apt-get install -y \
           build-essential \
           gettext \
@@ -69,13 +72,8 @@ jobs:
           pytest-custom-exit-code==0.3.0 \
           pytest-json-report
 
-        source $(poetry env info --path)/bin/activate
-
-        export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
-        export COMPAT=${{ matrix.deprecated }}
-        export VALGRIND=0
-
         poetry install --with=dev
+        source $(poetry env info --path)/bin/activate
 
         ./configure --disable-valgrind
         make -j $(nproc)
@@ -83,15 +81,15 @@ jobs:
 
     - name: Test with pytest
       run: |
-        cd lightning
-        source $(poetry env info --path)/bin/activate
-        cd ..
         export EXPERIMENTAL_FEATURES=${{ matrix.experimental }}
         export COMPAT=${{ matrix.deprecated }}
         export SLOW_MACHINE=1
         export TEST_DEBUG=1
         export TRAVIS=1
         export CLN_PATH=${{ github.workspace }}/lightning
+        
+        source $(poetry env info --path -C ./lightning)/bin/activate
+
         python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges
 
   gather:
