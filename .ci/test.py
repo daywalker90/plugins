@@ -18,7 +18,7 @@ global_dependencies = [
     "pytest-timeout",
 ]
 
-pip_opts = [""]
+pip_opts = []
 
 
 def prepare_env(p: Plugin, directory: Path, env: dict, workflow: str) -> bool:
