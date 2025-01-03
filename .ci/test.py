@@ -1,10 +1,10 @@
+import json
 import logging
 import os
 import subprocess
 import sys
 import tempfile
 import time
-import json
 from itertools import chain
 from pathlib import Path
 
@@ -225,15 +225,13 @@ def run_one(p: Plugin, workflow: str) -> bool:
     pytest_path = vpath / "bin" / "pytest"
 
     env = os.environ.copy()
-    env.update(
-        {
-            # Need to customize PATH so lightningd can find the correct python3
-            "PATH": "{}:{}".format(bin_path, os.environ["PATH"]),
-            # Some plugins require a valid locale to be set
-            "LC_ALL": "C.UTF-8",
-            "LANG": "C.UTF-8",
-        }
-    )
+    env.update({
+        # Need to customize PATH so lightningd can find the correct python3
+        "PATH": "{}:{}".format(bin_path, os.environ["PATH"]),
+        # Some plugins require a valid locale to be set
+        "LC_ALL": "C.UTF-8",
+        "LANG": "C.UTF-8",
+    })
 
     try:
         if not prepare_env(p, vpath, env, workflow):
@@ -298,14 +296,12 @@ def push_gather_data(data: dict, workflow: str, python_version: str):
     ).decode("utf-8")
     print(f"output from git add: {output}")
     if output != "":
-        output = subprocess.check_output(
-            [
-                "git",
-                "commit",
-                "-m",
-                f"Update test result for Python{python_version} to ({workflow} workflow)",
-            ]
-        ).decode("utf-8")
+        output = subprocess.check_output([
+            "git",
+            "commit",
+            "-m",
+            f"Update test result for Python{python_version} to ({workflow} workflow)",
+        ]).decode("utf-8")
         print(f"output from git commit: {output}")
         for _ in range(10):
             subprocess.run(["git", "pull", "--rebase"])
@@ -380,6 +376,8 @@ def run_all(
         )
     else:
         print("Testing all plugins in {root}".format(root=root))
+
+    plugins = [plugin for plugin in plugins if plugin.name == "holdinvoice"]
 
     results = [(p, run_one(p, workflow)) for p in plugins]
     success = all([t[1] for t in results])

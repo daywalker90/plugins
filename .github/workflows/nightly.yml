@@ -92,8 +92,7 @@ jobs:
         export CLN_PATH=${{ github.workspace }}/lightning
         pip3 install --upgrade pip
         pip3 install --user -U virtualenv pip > /dev/null
-        plugin_dirs="holdinvoice donations"
-        python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges $plugin_dirs
+        python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges
 
   gather:
     # A dummy task that depends on the full matrix of tests, and signals completion.
