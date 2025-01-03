@@ -377,7 +377,7 @@ def run_all(
     else:
         print("Testing all plugins in {root}".format(root=root))
 
-    plugins = [plugin for plugin in plugins if plugin.name == "holdinvoice"]
+    plugins = [plugin for plugin in plugins if plugin.name == "holdinvoice" or plugin.name == "donations"]
 
     results = [(p, run_one(p, workflow)) for p in plugins]
     success = all([t[1] for t in results])
