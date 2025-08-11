@@ -90,7 +90,7 @@ jobs:
         export TEST_DEBUG=1
         export TRAVIS=1
         export CLN_PATH=${{ github.workspace }}/lightning
-        uv run python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges
+        uv run --no-project python3 .ci/test.py nightly ${{ matrix.python-version }} --update-badges
 
   gather:
     # A dummy task that depends on the full matrix of tests, and signals completion.
