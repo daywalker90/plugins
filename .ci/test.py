@@ -193,19 +193,16 @@ def install_dev_pyln_testing(pip_path):
     cln_path = os.environ["CLN_PATH"]
 
     subprocess.check_call(
-        [
-            pip_path,
-            "install",
-            *pip_opts,
-            cln_path + "/contrib/pyln-client",
-        ],
+        [pip_path, "install", *pip_opts, *global_dependencies],
         stderr=subprocess.STDOUT,
     )
+
     subprocess.check_call(
         [
             pip_path,
             "install",
             *pip_opts,
+            cln_path + "/contrib/pyln-client",
             cln_path + "/contrib/pyln-testing",
         ],
         stderr=subprocess.STDOUT,
