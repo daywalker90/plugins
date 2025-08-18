@@ -111,7 +111,7 @@ jobs:
 
     - name: Save bitcoind cache
       uses: actions/cache/save@v4
-      if: ${{ always() && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
+      if: ${{ always() && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') && steps.cache-bitcoind.outputs.cache-hit != 'true' }}
       with:
           path: /usr/local/bin/bitcoin*
           key: cache-bitcoind-${{ matrix.bitcoind-version }}-${{ steps.exact_versions.outputs.os_version }}
@@ -138,7 +138,7 @@ jobs:
 
     - name: Save CLN cache
       uses: actions/cache/save@v4
-      if: ${{ always() && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
+      if: ${{ always() && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') && steps.cache-cln.outputs.cache-hit != 'true' }}
       with:
           path: |
             /usr/local/bin/lightning*
