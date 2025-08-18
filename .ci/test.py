@@ -271,7 +271,6 @@ def run_one(p: Plugin, workflow: str) -> bool:
         cmd = ["uv", "run", "pytest"] + cmd
     else:
         pytest_path = shutil.which("pytest", path=env["PATH"])
-        subprocess.check_call(["ls", "-al", env["PATH"].split(":")[0]])
         if not pytest_path:
             raise RuntimeError(f"pytest not found in PATH:{env['PATH']}")
         cmd = [pytest_path] + cmd
