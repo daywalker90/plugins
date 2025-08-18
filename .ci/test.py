@@ -9,6 +9,7 @@ import shutil
 import json
 from itertools import chain
 from pathlib import Path
+from typing import Tuple
 
 from utils import Plugin, configure_git, enumerate_plugins
 
@@ -24,51 +25,44 @@ global_dependencies = [
 pip_opts = ["-qq"]
 
 
-def prepare_env(p: Plugin, workflow: str) -> dict:
-    """Returns whether we can run at all. Raises error if preparing failed."""
+def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirectory]:
+    """Returns the environment and the temporary directory object."""
+    vdir = None
+
     if p.framework != "uv":
         # Create a virtual env
         vdir = tempfile.TemporaryDirectory()
         directory = Path(vdir.name)
-
         bin_path = directory / "bin"
 
         env = os.environ.copy()
         env.update(
             {
-                # Need to customize PATH so lightningd can find the correct python3
-                "PATH": "{}:{}".format(bin_path, os.environ["PATH"]),
-                # Some plugins require a valid locale to be set
+                "PATH": f"{bin_path}:{os.environ['PATH']}",
                 "LC_ALL": "C.UTF-8",
                 "LANG": "C.UTF-8",
             }
         )
 
-    subprocess.check_call(["python3", "-m", "venv", "--clear", directory])
+        # Create the virtualenv
+        subprocess.check_call(["python3", "-m", "venv", "--clear", str(directory)])
 
-    if p.framework == "pip":
-        if prepare_env_pip(p, directory, workflow):
-            logging.info(env["PATH"])
-            subprocess.check_call(["ls", "-al", bin_path])
-            pp = shutil.which("pytest", path=env["PATH"])
-            logging.info(f"pytest resolved to:{pp}")
-            return env
+        if p.framework == "pip":
+            if not prepare_env_pip(p, directory, workflow):
+                raise ValueError(f"Failed to prepare pip environment for {p.name}")
+        elif p.framework == "poetry":
+            if not prepare_env_poetry(p, directory, workflow):
+                raise ValueError(f"Failed to prepare poetry environment for {p.name}")
+        elif p.framework == "generic":
+            if not prepare_generic(p, directory, env, workflow):
+                raise ValueError(f"Failed to prepare generic environment for {p.name}")
         else:
-            raise ValueError(f"Failed to prepare pip environment for {p.name}")
-    elif p.framework == "poetry":
-        if prepare_env_poetry(p, directory, workflow):
-            return env
-        else:
-            raise ValueError(f"Failed to prepare poetry environment for {p.name}")
-    elif p.framework == "uv":
-        return {}
-    elif p.framework == "generic":
-        if prepare_generic(p, directory, env, workflow):
-            return env
-        else:
-            raise ValueError(f"Failed to prepare generic environment for {p.name}")
+            raise ValueError(f"Unknown framework {p.framework}")
+
     else:
-        raise ValueError(f"Unknown framework {p.framework}")
+        env = {} 
+
+    return env, vdir
 
 
 def prepare_env_poetry(p: Plugin, directory: Path, workflow: str) -> bool:
@@ -259,7 +253,7 @@ def run_one(p: Plugin, workflow: str) -> bool:
     print("::group::{p.name}".format(p=p))
 
     try:
-        env = prepare_env(p, workflow)
+        env, tmp_dir = prepare_env(p, workflow)
     except Exception as e:
         print(f"Error creating test environment: {e}")
         print("::endgroup::")
