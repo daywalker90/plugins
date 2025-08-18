@@ -58,23 +58,21 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
     plugins = list(
         [x for x in basedir.iterdir() if x.is_dir() and x.name not in exclude]
     )
-    # Explicitly detect rust in case there's python testing code
-    rust_plugins = [x for x in plugins if (x / Path("Cargo.toml")).exists()]
-    print(f"Rust plugins: {list_plugins(rust_plugins)}")
 
-    pip_pytest = [x for x in plugins if (x / Path("requirements.txt")).exists() and x not in rust_plugins]
+    pip_pytest = [x for x in plugins if (x / Path("requirements.txt")).exists()]
     print(f"Pip plugins: {list_plugins(pip_pytest)}")
 
-    poetry_pytest = [x for x in plugins if (x / Path("poetry.lock")).exists() and x not in rust_plugins]
-    print(f"Poetry plugins: {list_plugins(poetry_pytest)}")
-
-    uv_pytest = [x for x in plugins if (x / Path("uv.lock")).exists() and x not in rust_plugins]
+    uv_pytest = [x for x in plugins if (x / Path("uv.lock")).exists()]
     print(f"Uv plugins: {list_plugins(uv_pytest)}")
+
+    # Don't double detect plugins migrating to uv
+    poetry_pytest = [x for x in plugins if (x / Path("poetry.lock")).exists() and x not in uv_pytest]
+    print(f"Poetry plugins: {list_plugins(poetry_pytest)}")
 
     generic_plugins = [
         x for x in plugins if x not in pip_pytest and x not in poetry_pytest and x not in uv_pytest
     ]
-    print(f"Generic plugins (includes Rust): {list_plugins(generic_plugins)}")
+    print(f"Generic plugins: {list_plugins(generic_plugins)}")
 
     for p in sorted(pip_pytest):
         yield Plugin(
