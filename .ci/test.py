@@ -29,6 +29,7 @@ def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirec
     """Returns the environment and the temporary directory object."""
     vdir = None
     env = os.environ.copy()
+    directory = p.path / ".venv"
 
     if p.framework != "uv":
         # Create a temporary directory for virtualenv
