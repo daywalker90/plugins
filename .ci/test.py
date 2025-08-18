@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import shutil
 import json
 from itertools import chain
 from pathlib import Path
@@ -44,13 +45,12 @@ def prepare_env(p: Plugin, workflow: str) -> dict:
         )
 
     subprocess.check_call(["python3", "-m", "venv", "--clear", directory])
-    os.environ["PATH"] += f":{directory}"
 
     if p.framework == "pip":
         if prepare_env_pip(p, directory, workflow):
             logging.info(env["PATH"])
             subprocess.check_call(["ls", "-al", bin_path])
-            import shutil
+            
             logging.info("pytest resolved to:", shutil.which("pytest", path=env["PATH"]))
             return env
         else:
@@ -266,7 +266,6 @@ def run_one(p: Plugin, workflow: str) -> bool:
         return False
 
     cmd = [
-        "pytest",
         "-vvv",
         "--timeout=600",
         "--timeout-method=thread",
@@ -275,7 +274,12 @@ def run_one(p: Plugin, workflow: str) -> bool:
     ]
 
     if p.framework == "uv":
-        cmd = ["uv", "run"] + cmd
+        cmd = ["uv", "run", "pytest"] + cmd
+    else:
+        pytest_path = shutil.which("pytest", path=env["PATH"])
+        if not pytest_path:
+            raise RuntimeError("pytest not found in PATH")
+        cmd = [pytest_path] + cmd
 
     logging.info(f"Running `{' '.join(cmd)}` in directory {p.path.resolve()}")
     try:
