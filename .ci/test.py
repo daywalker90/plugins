@@ -278,7 +278,7 @@ def run_one(p: Plugin, workflow: str) -> bool:
     else:
         pytest_path = shutil.which("pytest", path=env["PATH"])
         if not pytest_path:
-            raise RuntimeError(f"pytest not found in PATH:{env["PATH"]}")
+            raise RuntimeError(f"pytest not found in PATH:{env['PATH']}")
         cmd = [pytest_path] + cmd
 
     logging.info(f"Running `{' '.join(cmd)}` in directory {p.path.resolve()}")
