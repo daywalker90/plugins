@@ -22,7 +22,7 @@ global_dependencies = [
 pip_opts = ["-qq"]
 
 
-def prepare_env(p: Plugin, directory: Path, env: dict, workflow: str) -> dict:
+def prepare_env(p: Plugin, workflow: str) -> dict:
     """Returns whether we can run at all. Raises error if preparing failed."""
     if p.framework != "uv":
         # Create a virtual env

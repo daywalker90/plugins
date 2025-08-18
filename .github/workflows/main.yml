@@ -124,7 +124,6 @@ jobs:
         path: |
           /usr/local/bin/lightning*
           /usr/local/libexec/c-lightning
-          ./lightning
         key: cache-cln-${{ matrix.cln-version }}-${{ steps.exact_versions.outputs.os_version }}
 
     - name: Download Core Lightning ${{ matrix.cln-version }} & install binaries
@@ -137,16 +136,6 @@ jobs:
         wget $url
         sudo tar -xvf ${url##*/} -C /usr/local --strip-components=2
 
-    - name: Checkout Core Lightning ${{ matrix.cln-version }}
-      if: ${{ steps.cache-cln.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
-      uses: actions/checkout@v4
-      with:
-        repository: 'ElementsProject/lightning'
-        path: 'lightning'
-        ref: 'v${{ matrix.cln-version }}'
-        fetch-depth: 0  # Fetch all history for all branches and tags
-        submodules: 'recursive'
-
     - name: Save CLN cache
       uses: actions/cache/save@v4
       if: ${{ steps.cache-cln.outputs.cache-hit != 'true' && github.event_name == 'push' }}
@@ -154,7 +143,6 @@ jobs:
           path: |
             /usr/local/bin/lightning*
             /usr/local/libexec/c-lightning
-            ./lightning
           key: cache-cln-${{ matrix.cln-version }}-${{ steps.exact_versions.outputs.os_version }}
 
     - name: Run pytest tests
