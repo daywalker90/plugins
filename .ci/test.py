@@ -37,10 +37,11 @@ def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirec
         directory = Path(vdir.name)
         bin_path = directory / "bin"
 
-        # Customize PATH so subprocess can find the virtualenv binaries
         env.update(
             {
+                # Need to customize PATH so lightningd can find the correct python3
                 "PATH": f"{bin_path}:{os.environ['PATH']}",
+                # Some plugins require a valid locale to be set
                 "LC_ALL": "C.UTF-8",
                 "LANG": "C.UTF-8",
             }
