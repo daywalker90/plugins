@@ -51,7 +51,7 @@ def prepare_env(p: Plugin, workflow: str) -> dict:
             logging.info(env["PATH"])
             subprocess.check_call(["ls", "-al", bin_path])
             
-            logging.info("pytest resolved to:", shutil.which("pytest", path=env["PATH"]))
+            logging.info("pytest resolved to:", str(shutil.which("pytest", path=env["PATH"])))
             return env
         else:
             raise ValueError(f"Failed to prepare pip environment for {p.name}")
@@ -278,7 +278,7 @@ def run_one(p: Plugin, workflow: str) -> bool:
     else:
         pytest_path = shutil.which("pytest", path=env["PATH"])
         if not pytest_path:
-            raise RuntimeError("pytest not found in PATH")
+            raise RuntimeError(f"pytest not found in PATH:{env["PATH"]}")
         cmd = [pytest_path] + cmd
 
     logging.info(f"Running `{' '.join(cmd)}` in directory {p.path.resolve()}")
