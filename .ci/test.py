@@ -48,7 +48,7 @@ def prepare_env(p: Plugin, workflow: str) -> dict:
 
     if p.framework == "pip":
         if prepare_env_pip(p, directory, workflow):
-            logging.info(env)
+            logging.info(env["PATH"])
             subprocess.check_call(["ls", "-al", bin_path])
             return env
         else:
