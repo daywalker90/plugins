@@ -48,6 +48,8 @@ def prepare_env(p: Plugin, workflow: str) -> dict:
 
     if p.framework == "pip":
         if prepare_env_pip(p, directory, workflow):
+            logging.info(env)
+            subprocess.check_call(["ls", "-al", bin_path])
             return env
         else:
             raise ValueError(f"Failed to prepare pip environment for {p.name}")
