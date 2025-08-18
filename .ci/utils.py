@@ -120,6 +120,5 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
             testfiles=get_testfiles(p),
             details={
                 "requirements": p / Path("tests/requirements.txt"),
-                "setup": p / Path("tests/setup.sh"),
             },
         )

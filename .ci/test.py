@@ -60,6 +60,15 @@ def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirec
         else:
             raise ValueError(f"Unknown framework {p.framework}")
 
+    setup_path = p.path / "tests" / "setup.sh"
+    if os.path.exists(setup_path):
+        print(f"Running setup script from {setup_path}")
+        subprocess.check_call(
+            ["bash", setup_path, f"TEST_DIR={directory}"],
+            env=env,
+            stderr=subprocess.STDOUT,
+        )
+
     return env, vdir
 
 
@@ -170,14 +179,6 @@ def prepare_generic(p: Plugin, directory: Path, env: dict, workflow: str) -> boo
         install_dev_pyln_testing(pip_path)
     else:
         install_pyln_testing(pip_path, workflow)
-
-    if p.details["setup"].exists():
-        print(f"Running setup script from {p.details['setup']}")
-        subprocess.check_call(
-            ["bash", p.details["setup"], f"TEST_DIR={directory}"],
-            env=env,
-            stderr=subprocess.STDOUT,
-        )
 
     subprocess.check_call([pip_path, "freeze"])
     return True
