@@ -50,6 +50,8 @@ def prepare_env(p: Plugin, workflow: str) -> dict:
         if prepare_env_pip(p, directory, workflow):
             logging.info(env["PATH"])
             subprocess.check_call(["ls", "-al", bin_path])
+            import shutil
+            logging.info("pytest resolved to:", shutil.which("pytest", path=env["PATH"]))
             return env
         else:
             raise ValueError(f"Failed to prepare pip environment for {p.name}")
