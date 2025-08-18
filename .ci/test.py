@@ -28,14 +28,15 @@ pip_opts = ["-qq"]
 def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirectory]:
     """Returns the environment and the temporary directory object."""
     vdir = None
+    env = os.environ.copy()
 
     if p.framework != "uv":
-        # Create a virtual env
+        # Create a temporary directory for virtualenv
         vdir = tempfile.TemporaryDirectory()
         directory = Path(vdir.name)
         bin_path = directory / "bin"
 
-        env = os.environ.copy()
+        # Customize PATH so subprocess can find the virtualenv binaries
         env.update(
             {
                 "PATH": f"{bin_path}:{os.environ['PATH']}",
@@ -58,9 +59,6 @@ def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirec
                 raise ValueError(f"Failed to prepare generic environment for {p.name}")
         else:
             raise ValueError(f"Unknown framework {p.framework}")
-
-    else:
-        env = {} 
 
     return env, vdir
 
