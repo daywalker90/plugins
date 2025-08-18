@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.12"]
+        python-version: ["3.9", "3.13"]
         bitcoind-version: ["28.1"]
         cln-version: ["24.11", "25.05", "25.02"]
         experimental: [1]
@@ -70,6 +70,9 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
 
     - name: Extract exact python and os version
       id: exact_versions
@@ -129,7 +132,7 @@ jobs:
       id: cln-install
       run: |
         url=$(curl -s https://api.github.com/repos/ElementsProject/lightning/releases/tags/v${{ matrix.cln-version }} \
-          | jq '.assets[] | select(.name | contains("22.04")) | .browser_download_url' \
+          | jq '.assets[] | select(.name | contains("24.04")) | .browser_download_url' \
           | tr -d '\"')
         wget $url
         sudo tar -xvf ${url##*/} -C /usr/local --strip-components=2
@@ -153,44 +156,6 @@ jobs:
             /usr/local/libexec/c-lightning
             ./lightning
           key: cache-cln-${{ matrix.cln-version }}-${{ steps.exact_versions.outputs.os_version }}
-
-    - name: Restore python dependencies cache
-      id: cache-python-deps
-      if: ${{ github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true' }}
-      uses: actions/cache@v4
-      with:
-        path: ~/.local/lib/python${{ matrix.python-version }}/site-packages
-        key: cache-python-deps-${{ steps.exact_versions.outputs.python_version }}-${{ matrix.cln-version }}-${{ steps.exact_versions.outputs.os_version }}
-
-    - name: Install Core Lightning Python package dependencies
-      if: ${{ steps.cache-python-deps.outputs.cache-hit != 'true' && (github.event_name == 'push' || steps.set_plugin_dirs.outputs.run_ci == 'true') }}
-      run: |
-        cd lightning
-        pip3 install --user -U \
-          pip \
-          uv \
-          poetry \
-          poetry-plugin-export \
-          wheel \
-          blinker \
-          pytest-custom-exit-code==0.3.0 \
-          pytest-json-report
-
-        poetry install --no-root
-        poetry update
-        poetry export --without-hashes -f requirements.txt --output requirements.txt
-        pip install --user -U -r requirements.txt
-        pip install --user contrib/pyln-client contrib/pyln-testing flaky
-
-        pip3 install --upgrade pip
-        pip3 install --user -U virtualenv pip > /dev/null
-
-    - name: Save python dependencies cache
-      uses: actions/cache/save@v4
-      if: ${{ steps.cache-python-deps.outputs.cache-hit != 'true' && github.event_name == 'push' }}
-      with:
-          path: ~/.local/lib/python${{ matrix.python-version }}/site-packages
-          key: cache-python-deps-${{ steps.exact_versions.outputs.python_version }}-${{ matrix.cln-version }}-${{ steps.exact_versions.outputs.os_version }}
 
     - name: Run pytest tests
       id: pytest_tests
@@ -244,10 +209,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Complete
         run: |
-          python_versions='3.9 3.12'
+          python_versions='3.9 3.13'
           echo "Updating badges data for ${{ matrix.cln-version }} workflow..."
           python3 .ci/update_badges.py ${{ matrix.cln-version }} $(echo "$python_versions")
           echo "CI completed."

@@ -22,17 +22,46 @@ global_dependencies = [
 pip_opts = ["-qq"]
 
 
-def prepare_env(p: Plugin, directory: Path, env: dict, workflow: str) -> bool:
+def prepare_env(p: Plugin, directory: Path, env: dict, workflow: str) -> dict:
     """Returns whether we can run at all. Raises error if preparing failed."""
+    if p.framework != "uv":
+        # Create a virtual env
+        vdir = tempfile.TemporaryDirectory()
+        directory = Path(vdir.name)
+
+        bin_path = directory / "bin"
+
+        env = os.environ.copy()
+        env.update(
+            {
+                # Need to customize PATH so lightningd can find the correct python3
+                "PATH": "{}:{}".format(bin_path, os.environ["PATH"]),
+                # Some plugins require a valid locale to be set
+                "LC_ALL": "C.UTF-8",
+                "LANG": "C.UTF-8",
+            }
+        )
+
     subprocess.check_call(["python3", "-m", "venv", "--clear", directory])
     os.environ["PATH"] += f":{directory}"
 
     if p.framework == "pip":
-        return prepare_env_pip(p, directory, workflow)
+        if prepare_env_pip(p, directory, workflow):
+            return env
+        else:
+            raise ValueError(f"Failed to prepare pip environment for {p.name}")
     elif p.framework == "poetry":
-        return prepare_env_poetry(p, directory, workflow)
+        if prepare_env_poetry(p, directory, workflow):
+            return env
+        else:
+            raise ValueError(f"Failed to prepare poetry environment for {p.name}")
+    elif p.framework == "uv":
+        return {}
     elif p.framework == "generic":
-        return prepare_generic(p, directory, env, workflow)
+        if prepare_generic(p, directory, env, workflow):
+            return env
+        else:
+            raise ValueError(f"Failed to prepare generic environment for {p.name}")
     else:
         raise ValueError(f"Unknown framework {p.framework}")
 
@@ -223,43 +252,24 @@ def run_one(p: Plugin, workflow: str) -> bool:
     )
     print("::group::{p.name}".format(p=p))
 
-    # Create a virtual env
-    vdir = tempfile.TemporaryDirectory()
-    vpath = Path(vdir.name)
-
-    bin_path = vpath / "bin"
-    pytest_path = vpath / "bin" / "pytest"
-
-    env = os.environ.copy()
-    env.update(
-        {
-            # Need to customize PATH so lightningd can find the correct python3
-            "PATH": "{}:{}".format(bin_path, os.environ["PATH"]),
-            # Some plugins require a valid locale to be set
-            "LC_ALL": "C.UTF-8",
-            "LANG": "C.UTF-8",
-        }
-    )
-
     try:
-        if not prepare_env(p, vpath, env, workflow):
-            # Skipping is counted as a success
-            return True
+        env = prepare_env(p, workflow)
     except Exception as e:
         print(f"Error creating test environment: {e}")
         print("::endgroup::")
         return False
 
-    logging.info(f"Virtualenv at {vpath}")
-
     cmd = [
-        str(pytest_path),
+        "pytest",
         "-vvv",
         "--timeout=600",
         "--timeout-method=thread",
         "--color=yes",
         "-n=5",
     ]
+
+    if p.framework == "uv":
+        cmd = ["uv", "run"] + cmd
 
     logging.info(f"Running `{' '.join(cmd)}` in directory {p.path.resolve()}")
     try:

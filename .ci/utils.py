@@ -65,11 +65,14 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
     pip_pytest = [x for x in plugins if (x / Path("requirements.txt")).exists() and x not in rust_plugins]
     print(f"Pip plugins: {list_plugins(pip_pytest)}")
 
-    poetry_pytest = [x for x in plugins if (x / Path("pyproject.toml")).exists() and x not in rust_plugins]
+    poetry_pytest = [x for x in plugins if (x / Path("poetry.lock")).exists() and x not in rust_plugins]
     print(f"Poetry plugins: {list_plugins(poetry_pytest)}")
 
+    uv_pytest = [x for x in plugins if (x / Path("uv.lock")).exists() and x not in rust_plugins]
+    print(f"Uv plugins: {list_plugins(uv_pytest)}")
+
     generic_plugins = [
-        x for x in plugins if x not in pip_pytest and x not in poetry_pytest
+        x for x in plugins if x not in pip_pytest and x not in poetry_pytest and x not in uv_pytest
     ]
     print(f"Generic plugins (includes Rust): {list_plugins(generic_plugins)}")
 
@@ -92,6 +95,18 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
             path=p,
             language="python",
             framework="poetry",
+            testfiles=get_testfiles(p),
+            details={
+                "pyproject": p / Path("pyproject.toml"),
+            },
+        )
+
+    for p in sorted(uv_pytest):
+        yield Plugin(
+            name=p.name,
+            path=p,
+            language="python",
+            framework="uv",
             testfiles=get_testfiles(p),
             details={
                 "pyproject": p / Path("pyproject.toml"),
