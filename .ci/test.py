@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -124,7 +125,7 @@ def prepare_env_poetry(p: Plugin, directory: Path, workflow: str) -> bool:
     if workflow == "nightly":
         install_dev_pyln_testing(pip3)
     else:
-        install_pyln_testing(pip3)
+        install_pyln_testing(pip3, workflow)
 
     subprocess.check_call([pip3, "freeze"])
     return True
@@ -151,7 +152,7 @@ def prepare_env_pip(p: Plugin, directory: Path, workflow: str) -> bool:
     if workflow == "nightly":
         install_dev_pyln_testing(pip_path)
     else:
-        install_pyln_testing(pip_path)
+        install_pyln_testing(pip_path, workflow)
 
     subprocess.check_call([pip_path, "freeze"])
     return True
@@ -172,7 +173,7 @@ def prepare_generic(p: Plugin, directory: Path, env: dict, workflow: str) -> boo
     if workflow == "nightly":
         install_dev_pyln_testing(pip_path)
     else:
-        install_pyln_testing(pip_path)
+        install_pyln_testing(pip_path, workflow)
 
     if p.details["setup"].exists():
         print(f"Running setup script from {p.details['setup']}")
@@ -186,9 +187,8 @@ def prepare_generic(p: Plugin, directory: Path, env: dict, workflow: str) -> boo
     return True
 
 
-def install_pyln_testing(pip_path):
+def install_pyln_testing(pip_path, workflow: str):
     # Many plugins only implicitly depend on pyln-testing, so let's help them
-    cln_path = os.environ["CLN_PATH"]
 
     # Install pytest (eventually we'd want plugin authors to include
     # it in their requirements-dev.txt, but for now let's help them a
@@ -203,13 +203,15 @@ def install_pyln_testing(pip_path):
         stderr=subprocess.STDOUT,
     )
 
+    pyln_version = re.sub(r'\.0(\d+)', r'.\1', workflow)
+
     subprocess.check_call(
         [
             pip_path,
             "install",
             *pip_opts,
-            cln_path + "/contrib/pyln-client",
-            cln_path + "/contrib/pyln-testing",
+            f"pyln-client=={pyln_version}",
+            f"pyln-testing=={pyln_version}",
             "MarkupSafe>=2.0",
             "itsdangerous>=2.0",
         ],
