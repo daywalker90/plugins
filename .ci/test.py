@@ -153,6 +153,11 @@ def prepare_generic(p: Plugin, directory: Path, env: dict, workflow: str) -> boo
             stderr=subprocess.STDOUT,
         )
 
+    if workflow == "nightly":
+        install_dev_pyln_testing(pip_path)
+    else:
+        install_pyln_testing(pip_path)
+
     subprocess.check_call([pip_path, "freeze"])
     return True
 
