@@ -48,11 +48,11 @@ def get_testfiles(p: Path) -> List[PosixPath]:
                     y
                     for y in x.iterdir()
                     if y.is_file()
-                    and y.name.startswith("test_")
+                    and y.name.startswith("test")
                     and y.name.endswith(".py")
                 ]
             )
-        elif x.is_file() and x.name.startswith("test_") and x.name.endswith(".py"):
+        elif x.is_file() and x.name.startswith("test") and x.name.endswith(".py"):
             test_files.append(x)
     return test_files
 
