@@ -1,7 +1,11 @@
 import subprocess
 from collections import namedtuple
 from pathlib import Path, PosixPath
-import tomllib
+
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Python 3.9+
 from typing import Generator, List
 
 Plugin = namedtuple(
@@ -23,6 +27,8 @@ exclude = [
     "archived",
     "lightning",
 ]
+
+override_subdirectory = {"watchtower-client": "watchtower-plugin"}
 
 
 def configure_git():
@@ -56,9 +62,20 @@ def list_plugins(plugins: list) -> str:
 
 
 def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
-    plugins = list(
-        [x for x in basedir.iterdir() if x.is_dir() and x.name not in exclude]
-    )
+    plugins = []
+    for plugin_dir in basedir.iterdir():
+        if not plugin_dir.is_dir() or plugin_dir.name in exclude:
+            continue
+
+        subdir = override_subdirectory.get(plugin_dir.name)
+        if subdir:
+            override_path = plugin_dir / subdir
+            if override_path.is_dir():
+                plugins.append(override_path)
+            else:
+                plugins.append(plugin_dir)
+        else:
+            plugins.append(plugin_dir)
 
     pip_pytest = [
         (x, find_framework_file(x, "requirements.txt"))
