@@ -82,7 +82,6 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
         for x in plugins
         if find_framework_file(x, "requirements.txt")
     ]
-    print(f"Pip test framework plugins: {list_plugins(pip_pytest)}")
 
     uv_pytest = [
         (x, find_framework_file(x, "uv.lock"))
@@ -116,8 +115,22 @@ def enumerate_plugins(basedir: Path) -> Generator[Plugin, None, None]:
         else:
             print(f"Unsupported framework {framework} in {plugin}")
 
-    print(f"Uv test framework plugins: {list_plugins(uv_pytest)}")
-    print(f"Poetry test framework plugins: {list_plugins(poetry_pytest)}")
+    for plugin in plugins:
+        already_pip = any(p == plugin for p, _ in pip_pytest)
+        already_uv = any(p == plugin for p, _ in uv_pytest)
+        already_poetry = any(p == plugin for p, _ in poetry_pytest)
+
+        if already_pip or already_uv or already_poetry:
+            continue
+
+        if get_testfiles(plugin):
+            pip_pytest.append((plugin, None))
+
+    print(f"{len(pip_pytest)} Pip test framework plugins: {list_plugins(pip_pytest)}")
+    print(f"{len(uv_pytest)} Uv test framework plugins: {list_plugins(uv_pytest)}")
+    print(
+        f"{len(poetry_pytest)} Poetry test framework plugins: {list_plugins(poetry_pytest)}"
+    )
 
     for p, req_path in sorted(pip_pytest):
         yield Plugin(
