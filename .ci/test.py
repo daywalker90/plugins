@@ -56,9 +56,6 @@ def prepare_env(p: Plugin, workflow: str) -> Tuple[dict, tempfile.TemporaryDirec
         elif p.framework == "poetry":
             if not prepare_env_poetry(p, directory, workflow):
                 raise ValueError(f"Failed to prepare poetry environment for {p.name}")
-        elif p.framework == "generic":
-            if not prepare_generic(p, directory, env, workflow):
-                raise ValueError(f"Failed to prepare generic environment for {p.name}")
         else:
             raise ValueError(f"Unknown framework {p.framework}")
 
@@ -159,37 +156,17 @@ def prepare_env_pip(p: Plugin, directory: Path, workflow: str) -> bool:
     pip_path = directory / "bin" / "pip3"
 
     # Now install all the requirements
-    print(f"Installing requirements from {p.details['requirements']}")
-    subprocess.check_call(
-        [pip_path, "install", *pip_opts, "-r", p.details["requirements"]],
-        stderr=subprocess.STDOUT,
-    )
-
-    if p.details["devrequirements"].exists():
-        print(f"Installing requirements from {p.details['devrequirements']}")
-        subprocess.check_call(
-            [pip_path, "install", *pip_opts, "-r", p.details["devrequirements"]],
-            stderr=subprocess.STDOUT,
-        )
-
-    if workflow == "nightly":
-        install_dev_pyln_testing(pip_path)
-    else:
-        install_pyln_testing(pip_path, workflow)
-
-    subprocess.check_call([pip_path, "freeze"])
-    return True
-
-
-def prepare_generic(p: Plugin, directory: Path, env: dict, workflow: str) -> bool:
-    print("Installing a new generic virtualenv")
-    pip_path = directory / "bin" / "pip3"
-
-    # Now install all the requirements
-    if p.details["requirements"].exists():
+    if p.details["requirements"] and p.details["requirements"].exists():
         print(f"Installing requirements from {p.details['requirements']}")
         subprocess.check_call(
             [pip_path, "install", *pip_opts, "-r", p.details["requirements"]],
+            stderr=subprocess.STDOUT,
+        )
+
+    if p.details["devrequirements"] and p.details["devrequirements"].exists():
+        print(f"Installing requirements from {p.details['devrequirements']}")
+        subprocess.check_call(
+            [pip_path, "install", *pip_opts, "-r", p.details["devrequirements"]],
             stderr=subprocess.STDOUT,
         )
 
@@ -218,7 +195,7 @@ def install_pyln_testing(pip_path, workflow: str):
         stderr=subprocess.STDOUT,
     )
 
-    pyln_version = re.sub(r'\.0(\d+)', r'.\1', workflow)
+    pyln_version = re.sub(r"\.0(\d+)", r".\1", workflow)
 
     subprocess.check_call(
         [
