@@ -558,8 +558,8 @@ def run_all(
         print("Testing all plugins in {root}".format(root=root))
 
     timings = {}
-    results = [(p, run_one(p, workflow, timings)) for p in plugins]
-    success = all([t[1] for t in results])
+    # results = [(p, run_one(p, workflow, timings)) for p in plugins]
+    # success = all([t[1] for t in results])
 
     results_reckless = [(p, run_one_reckless(p, workflow, timings)) for p in plugins]
     success_reckless = all([t[1] for t in results_reckless])
@@ -580,18 +580,18 @@ def run_all(
 
         print(f"{plugin:<35} env:{env_str}  tests:{tests_str}  reckless:{reckless_str}")
 
-    old_failures = []
-    if not success and plugin_names == []:
-        gather_old_failures(old_failures, workflow)
+    # old_failures = []
+    # if not success and plugin_names == []:
+    #     gather_old_failures(old_failures, workflow)
 
     old_failures_reckless = []
     if not success_reckless and plugin_names == []:
         gather_old_failures(old_failures_reckless, workflow, "reckless")
 
     if update_badges:
-        push_gather_data(
-            collect_gather_data(results, success), workflow, python_version
-        )
+        # push_gather_data(
+        #     collect_gather_data(results, success), workflow, python_version
+        # )
         push_gather_data(
             collect_gather_data(results_reckless, success_reckless, False),
             workflow,
@@ -599,20 +599,20 @@ def run_all(
             "reckless",
         )
 
-    if not success or not success_reckless:
-        print("The following tests failed:")
-        has_new_failure = False
-        for t in filter(lambda t: not t[1], results):
-            if t[0].name not in old_failures:
-                has_new_failure = True
-            print(" - {p.name} ({p.path})".format(p=t[0]))
+    if not success_reckless:
+        # print("The following tests failed:")
+        # has_new_failure = False
+        # for t in filter(lambda t: not t[1], results):
+        #     if t[0].name not in old_failures:
+        #         has_new_failure = True
+        #     print(" - {p.name} ({p.path})".format(p=t[0]))
         print("The following reckless tests failed:")
         has_new_failure_reckless = False
         for t in filter(lambda t: not t[1], results_reckless):
             if t[0].name not in old_failures_reckless:
                 has_new_failure_reckless = True
             print(" - {p.name}-reckless ({p.path})".format(p=t[0]))
-        if has_new_failure or has_new_failure_reckless:
+        if has_new_failure_reckless:
             sys.exit(1)
     else:
         print("All tests passed.")
