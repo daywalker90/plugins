@@ -373,6 +373,7 @@ def run_one(p: Plugin, workflow: str, timings: dict) -> bool:
 
 def run_one_reckless(p: Plugin, workflow: str, timings: dict) -> bool:
     print("Running reckless with plugin {p.name}".format(p=p))
+    timings[p.name] = {}
 
     print("::group::{p.name}-reckless".format(p=p), flush=True)
 
