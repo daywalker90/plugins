@@ -44,7 +44,7 @@ jobs:
     - name: Checkout Core Lightning
       uses: actions/checkout@v6
       with:
-        repository: 'ElementsProject/lightning'
+        repository: 'daywalker90/lightning'
         path: 'lightning'
         ref: master
         submodules: 'recursive'
