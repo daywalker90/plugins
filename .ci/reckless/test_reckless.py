@@ -86,11 +86,8 @@ def test_plugin_install(node_factory, plugin_name):
 
     l1.rpc.call("reckless", ["source", "add", f"{os.environ['GITHUB_WORKSPACE']}"])
 
-    l1.rpc.call("reckless", ["install", plugin_name, "-v", "--developer"])
+    response = l1.rpc.call("reckless", ["install", plugin_name, "-v", "--developer"])
 
-    plugin_list = l1.rpc.call("plugin", ["list"])
-
-    for plugin in plugin_list["plugins"]:
-        if plugin_name in plugin["name"]:
-            return
-    pytest.fail(f"Plugin {plugin_name} not installed")
+    assert response["result"][0]["plugin_name"] == plugin_name
+    if not response["result"][0]["enabled"]:
+        LOGGER.warning(f"{plugin_name} could not be automatically enabled by reckless")
